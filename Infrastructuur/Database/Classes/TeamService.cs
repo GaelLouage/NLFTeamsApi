@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Infrastructuur.Mappers;
+using MongoDB.Bson;
 
 namespace Infrastructuur.Database.Classes
 {
@@ -20,14 +21,20 @@ namespace Infrastructuur.Database.Classes
             _mongoDbContext = mongoDbContext;
         }
 
-        public Task<bool> AddTeamAsync(TeamEntity team)
+        public async Task<TeamEntity> AddTeamAsync(TeamEntity team)
         {
-            throw new NotImplementedException();
+            return await _mongoDbContext.CreateAsync<TeamEntity>(team, "Team",
+                 new BsonDocument
+                 {
+                    {"id", (await GetTeamsAsync()).Max(x => x.Id) + 1},
+                    {"name",team.Name },
+                  }
+                 );
         }
 
-        public Task<List<TeamEntity>> GetAllTeamsFromUserAsync(int userId)
+        public async Task<List<TeamEntity>> GetAllTeamsFromUserAsync(int userId)
         {
-            return _mongoDbContext.GetAllTeamsFromUser(userId);
+            return await _mongoDbContext.GetAllTeamsFromUser(userId);
         }
 
         public async Task<ResultDto> GetTeamByIdAsync(int teamId)
@@ -43,19 +50,29 @@ namespace Infrastructuur.Database.Classes
             return resultDto;
         }
 
-        public async Task<List<TeamEntity>> GetTeams()
+        public async Task<List<TeamEntity>> GetTeamsAsync()
         {
             return (await _mongoDbContext.GetAllAsync<TeamEntity>("Team")).ToList();
         }
 
-        public Task<List<TeamEntity>> GetTeamsAsync()
-        {
-            throw new NotImplementedException();
-        }
 
         public async Task<bool> RemoveTeamByIdAsync(int teamId)
         {
             return await _mongoDbContext.DeleteAsync<TeamEntity>(teamId,"Team", x => x.Id == teamId);
+        }
+
+        public async Task<bool> UpdateTeamById(int teamId, string name)
+        {
+            return await _mongoDbContext.UpdateAsync<TeamEntity>(
+                teamId,
+                "name",
+                name,
+                "Team",
+                new BsonDocument
+                {
+                    {"name",name }
+                }
+                );
         }
     }
 }

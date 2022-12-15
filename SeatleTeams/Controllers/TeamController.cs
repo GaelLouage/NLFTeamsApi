@@ -28,15 +28,25 @@ namespace SeatleTeams.Controllers
         [HttpGet("GetAllTeams")]
         public async Task<IActionResult> GetAllteams()
         {
-            return Ok(await _teamService.GetTeams());
+            return Ok(await _teamService.GetTeamsAsync());
         }
         [HttpDelete("RemoveTeamById/{id}")]
         public async Task<IActionResult> RemoveTeamById(int id)
         {
             await _teamService.RemoveTeamByIdAsync(id);
-            var teams = await _teamService.GetTeams();
+            var teams = await _teamService.GetTeamsAsync();
             return Ok(teams);
         }
-
+        [HttpPost("CreateTeam")]
+        public async Task<IActionResult> CreateTeam(TeamEntity team)
+        {
+            return Ok(await _teamService.AddTeamAsync(team));
+        }
+        [HttpPut("UpdateTeambyId/{id}")]
+        public async Task<IActionResult> UpdateTeambyId(int id, string name)
+        {
+            await _teamService.UpdateTeamById(id, name);
+            return Ok(await _teamService.GetTeamsAsync());
+        }
     }
 }
